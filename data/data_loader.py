@@ -1,7 +1,7 @@
 import glob
 from os.path import splitext
 from os import listdir
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import torch
 
@@ -19,3 +19,8 @@ class DatasetTemplate(Dataset):
 
     def __len__(self):
         return len(self.f_list)
+
+def get_loader(img_dir, mask_dir, args, shuffle=True):
+    dataset = DatasetTemplate(img_dir, mask_dir)
+    data_loader = DataLoader(dataset, args.batchsize, shuffle, num_workers=args.num_workers)
+    return data_loader
