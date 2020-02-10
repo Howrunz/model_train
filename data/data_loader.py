@@ -22,5 +22,5 @@ class DatasetTemplate(Dataset):
 
 def get_loader(img_dir, mask_dir, args, shuffle=True):
     dataset = DatasetTemplate(img_dir, mask_dir)
-    data_loader = DataLoader(dataset, args.batchsize, shuffle, num_workers=args.num_workers)
+    data_loader = DataLoader(dataset, args.batch_size, shuffle, num_workers=args.workers)
     return data_loader
