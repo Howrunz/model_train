@@ -14,4 +14,5 @@ def save_weight(model, model_path, train_loss, valid_loss, epoch, step):
             'step': step,
             'train_loss': train_loss,
             'valid_loss': valid_loss
-        }, str(model_path))
+        }, str(model_path)
+    )
