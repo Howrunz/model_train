@@ -14,7 +14,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from model.UNet import UNet
 from loss.Dice_loss import Diceloss
-from data.data_loader import get_loader
+from dataset.data_loader import get_loader
 from utils import tools
 
 def main():
@@ -27,8 +27,8 @@ def main():
     arg('--workers', type=int, default=4, help='num workers')
     arg('--model', type=str, default='UNet', choices=['UNet'])
     arg('--checkpoint', type=str, default='checkpoint/UNet')
-    arg('--image-dir', type=str, default='./dataset/image')
-    arg('--mask-dir', type=str, default='./dataset/mask')
+    arg('--image-dir', type=str, default='./data/image')
+    arg('--mask-dir', type=str, default='./data/mask')
     args = parser.parse_args()
 
     # folder for checkpoint
