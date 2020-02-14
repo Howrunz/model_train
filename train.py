@@ -20,16 +20,15 @@ from utils import tools
 def main():
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
-    arg('--batch-size', type=int, default=8, help='batch size')
-    arg('--epochs', type=int, default=100, help='train epochs')
-    arg('--optimizer', type=str, default='Adam', help='Adam or SGD')
-    arg('--lr', type=float, default=0.0001, help='learning rate')
-    arg('--workers', type=int, default=4, help='num workers')
     arg('--model', type=str, default='UNet', choices=['UNet'])
+    arg('--config-file', type=str, default='./config/train_config.yaml')
     arg('--checkpoint', type=str, default='checkpoint/UNet')
     arg('--image-dir', type=str, default='./data/image')
     arg('--mask-dir', type=str, default='./data/mask')
     args = parser.parse_args()
+
+    # get config
+    cfg = tools.read_yaml(args.config_file)
 
     # folder for checkpoint
     checkpoint = Path(args.checkpoint)
@@ -64,8 +63,9 @@ def main():
     best_validation_loss = 0.
 
     # define dataloader
-    train_loader = get_loader(args.image_dir, args.mask_dir, args)
-    # valid_loader = TODO
+    csv_dir = './data/'
+    train_loader = get_loader(cfg, args.image_dir, args.mask_dir, csv_dir)
+    valid_loader = get_loader(cfg, args.image_dir, args.mask_dir, csv_dir, status='validation')
 
     # save train image
     if True:
@@ -78,8 +78,9 @@ def main():
         print('-★-' * 10)
 
     # optimizer
-    optimizer = Adam(network.parameters(), lr=args.lr)
-    if args.optimizer == 'SGD':
+    if cfg['Model']['Optimizer'] == 'Adam':
+        optimizer = Adam(network.parameters(), lr=args.lr)
+    else:
         optimizer = SGD(network.parameters(), lr=args.lr)
 
     # change learning rate
@@ -88,7 +89,7 @@ def main():
     # start training
     print('start training')
     step = 0
-    for epoch in range(1, args.epochs):
+    for epoch in range(1, cfg['Model']['Epochs']):
         start_time = time.time()
         network.train()
         try:
@@ -97,19 +98,18 @@ def main():
                 mask = mask.to(device)
                 output = network(image)
                 train_loss = criterion(output, mask)
-                print(f'epoch = {epoch: 3d}, iter = {i: 3d}, loss = {loss.item(): .4g}')
+                print(f'epoch = {epoch: 3d}, iter = {i: 3d}, loss = {train_loss.item(): .4g}')
                 optimizer.zero_grad()
                 train_loss.backward()
                 optimizer.step()
                 step += 1
-            # TODO
-            # valid_loss = validation(network, criterion, valid_loader, device)
-            # print('valid_loss:', valid_loss)
-            # if valid_loss < best_validation_loss:
-            #     tools.save_weight(network, model_path, train_loss, valid_loss, epoch, step)
-            #     best_validation_loss = valid_loss
-            #     print('Save best model by validation loss')
-            # scheduler.step(valid_loss)
+            valid_loss = validation(network, criterion, valid_loader, device)
+            print('valid_loss:', valid_loss)
+            if valid_loss < best_validation_loss:
+                tools.save_weight(network, model_path, train_loss, valid_loss, epoch, step)
+                best_validation_loss = valid_loss
+                print('Save best model by validation loss')
+            scheduler.step(valid_loss)
         except:
             pass
 
