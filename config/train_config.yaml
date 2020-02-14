@@ -1,0 +1,10 @@
+MODEL:
+  Batch_size: 8
+  Learning_rate: 0.0001
+  Optimizer: Adam # choice in Adam or SGD
+  Epochs: 100
+  Num_workers: 4
+DATASET:
+  Height: 256
+  Width: 256
+  Channel: 3
