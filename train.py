@@ -22,7 +22,7 @@ def main():
     arg = parser.add_argument
     arg('--model', type=str, default='UNet', choices=['UNet'])
     arg('--config-file', type=str, default='./config/train_config.yaml')
-    arg('--checkpoint', type=str, default='checkpoint/UNet')
+    arg('--checkpoint', type=str, default='checkpoint/')
     arg('--image-dir', type=str, default='./data/image')
     arg('--mask-dir', type=str, default='./data/mask')
     args = parser.parse_args()
@@ -63,7 +63,7 @@ def main():
     best_validation_loss = 0.
 
     # define dataloader
-    csv_dir = './data/'
+    csv_dir = cfg['DIRECTORY']['csv_dir']
     train_loader = get_loader(cfg, args.image_dir, args.mask_dir, csv_dir)
     valid_loader = get_loader(cfg, args.image_dir, args.mask_dir, csv_dir, status='validation')
 
