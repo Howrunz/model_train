@@ -59,7 +59,6 @@ def main():
     # define loss
     dice_loss = Diceloss()
     criterion = dice_loss
-    train_loss = 0.
     best_validation_loss = 0.
 
     # define dataloader
@@ -91,27 +90,27 @@ def main():
     step = 0
     for epoch in range(1, cfg['Model']['Epochs']):
         start_time = time.time()
+        train_loss = 0.
         network.train()
-        try:
-            for i, (image, mask) in enumerate(train_loader):
-                image = image.to(device)
-                mask = mask.to(device)
-                output = network(image)
-                train_loss = criterion(output, mask)
-                print(f'epoch = {epoch: 3d}, iter = {i: 3d}, loss = {train_loss.item(): .4g}')
-                optimizer.zero_grad()
-                train_loss.backward()
-                optimizer.step()
-                step += 1
-            valid_loss = validation(network, criterion, valid_loader, device)
-            print('valid_loss:', valid_loss)
-            if valid_loss < best_validation_loss:
-                tools.save_weight(network, model_path, train_loss, valid_loss, epoch, step)
-                best_validation_loss = valid_loss
-                print('Save best model by validation loss')
-            scheduler.step(valid_loss)
-        except:
-            pass
+        for i, (image, mask) in enumerate(train_loader):
+            image = image.to(device)
+            mask = mask.to(device)
+            optimizer.zero_grad()
+            torch.set_grad_enabled(True)
+            output = network(image)
+            loss = criterion(output, mask)
+            train_loss += loss.item()
+            print(f'epoch = {epoch: 3d}, iter = {i: 3d}, loss = {train_loss: .4g}')
+            loss.backward()
+            optimizer.step()
+            step += 1
+        valid_loss = validation(network, criterion, valid_loader, device)
+        print('valid_loss:', valid_loss)
+        if valid_loss < best_validation_loss:
+            tools.save_weight(network, model_path, train_loss, valid_loss, epoch, step)
+            best_validation_loss = valid_loss
+            print('Save best model by validation loss')
+        scheduler.step(valid_loss)
 
 if __name__ == '__main__':
     main()
