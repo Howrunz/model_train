@@ -5,6 +5,7 @@ from pathlib import Path
 import cv2 as cv
 import time
 from validation import validation
+import utils.evaluation as ev
 
 import torch
 import torch.nn as nn
@@ -105,7 +106,6 @@ def main():
             optimizer.step()
             step += 1
         valid_loss = validation(network, criterion, valid_loader, device)
-        print('valid_loss:', valid_loss)
         if valid_loss < best_validation_loss:
             tools.save_weight(network, model_path, train_loss, valid_loss, epoch, step)
             best_validation_loss = valid_loss
