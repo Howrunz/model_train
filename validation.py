@@ -1,5 +1,5 @@
 import time
-from utils.evaluation import evaluate_dice
+from utils.evaluation import evaluate_all
 
 import torch
 import torch.nn as nn
@@ -23,6 +23,13 @@ def validation(model:nn.Module, criterion, valid_loader, device):
             validation_true.extend([mask_np[s] for s in range(mask_np.shape[0])])
         end_time = time.time() - start_time
         print('vaildation epoch time: ', end_time)
-    val_dice = evaluate_dice(validation_pred, validation_true)
+    val_dice, other = evaluate_all(validation_pred, validation_true)
+    recall, precision, accuracy, sensitivity, specificity, F1_score = other
     print('validation dice: %4f' % val_dice)
+    print('validation F1_score: %4f' % F1_score)
+    print('validation recall: %4f' % recall)
+    print('validation precision: %4f' % precision)
+    print('validation accuracy: %4f' % accuracy)
+    print('validation sensitivity: %4f' % sensitivity)
+    print('validation specificity: %4f' % specificity)
     return val_loss
