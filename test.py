@@ -13,6 +13,7 @@ def main():
     arg('--model', type=str, default='UNet', choices=['UNet'])
     arg('--image-path', type=str, default='./data/test/')
     arg('--output-path', type=str, default='./output/')
+    arg('--config-file', type=str, default='./config/train_config.yaml')
     args = parser.parse_args()
 
     cfg = tools.read_yaml(args.config_file)
@@ -29,6 +30,7 @@ def main():
     network.load_state_dict(weight['model'])
 
     with torch.no_grad():
+        network.eval()
         for test_image, test_name in data_loader:
             test_image = test_image.to(device)
             outputs = network(test_image)
