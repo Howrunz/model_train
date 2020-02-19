@@ -9,6 +9,8 @@ def validation(model:nn.Module, criterion, valid_loader, device):
     val_loss = 0.
     validation_pred = []
     validation_true = []
+
+    model.eval()
     with torch.no_grad():
         start_time = time.time()
         for image, mask in valid_loader:
