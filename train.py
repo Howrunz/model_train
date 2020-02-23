@@ -1,15 +1,12 @@
-import pandas as pd
-import numpy as np
 import argparse
 from pathlib import Path
 import cv2 as cv
 import time
 from validation import validation
-import utils.evaluation as ev
+from tensorboardX import SummaryWriter
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.optim import Adam, SGD
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -24,12 +21,13 @@ def main():
     arg('--model', type=str, default='UNet', choices=['UNet'])
     arg('--config-file', type=str, default='./config/train_config.yaml')
     arg('--checkpoint', type=str, default='checkpoint/')
-    arg('--image-dir', type=str, default='./data/image')
-    arg('--mask-dir', type=str, default='./data/mask')
     args = parser.parse_args()
 
     # get config
     cfg = tools.read_yaml(args.config_file)
+
+    # init writer
+    writer = SummaryWriter(log_dir='log_result')
 
     # folder for checkpoint
     checkpoint = Path(args.checkpoint)
@@ -64,14 +62,17 @@ def main():
 
     # define dataloader
     csv_dir = cfg['DIRECTORY']['csv_dir']
-    train_loader = get_loader(cfg, args.image_dir, args.mask_dir, csv_dir)
-    valid_loader = get_loader(cfg, args.image_dir, args.mask_dir, csv_dir, status='validation')
+    image_dir = cfg['DIRECTORY']['image_dir']
+    mask_dir = cfg['DIRECTORY']['mask_dir']
+    train_loader = get_loader(cfg, image_dir, mask_dir, csv_dir)
+    valid_loader = get_loader(cfg, image_dir, mask_dir, csv_dir, status='validation')
 
     # save train image
     if True:
         print('-★-' * 10)
         print('check train image and mask')
         train_img, train_mask = next(iter(train_loader))
+        print('train image shape: {}'.format(train_img.shape))
         train_img[:, :, 0] = train_img[:, :, 0] * 0.7 + train_mask * 0.3
         cv.imwrite('./result/random_train_image.jpg', train_img)
         print('save train image successful!')
@@ -101,11 +102,13 @@ def main():
             output = network(image)
             loss = criterion(output, mask)
             train_loss += loss.item()
+            writer.add_scalar('evaluation/train_loss', loss, epoch)
             print(f'epoch = {epoch: 3d}, iter = {i: 3d}, loss = {train_loss: .4g}')
             loss.backward()
             optimizer.step()
             step += 1
-        valid_loss = validation(network, criterion, valid_loader, device)
+        valid_loss = validation(network, criterion, valid_loader, device, writer, epoch)
+        writer.add_scalar('evaluation/valid_loss', valid_loss, epoch)
         if valid_loss < best_validation_loss:
             tools.save_weight(network, model_path, train_loss, valid_loss, epoch, step)
             best_validation_loss = valid_loss
