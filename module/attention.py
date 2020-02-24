@@ -450,6 +450,52 @@ class GridAttentionBlock3D_TORR(_GridAttentionBlockND_TORR):
                                                    bn_layer=bn_layer)
 
 
+class UNetGatingSignal(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(UNetGatingSignal, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.fmap_size = 4
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(self.in_channels, self.in_channels//2, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2d(self.in_channels//2),
+            nn.ReLU(inplace=True),
+            nn.AdaptiveAvgPool2d(output_size=self.fmap_size)
+        )
+        self.fc = nn.Linear(
+            in_features=(self.in_channels//2)*(self.fmap_size**3),
+            out_features=self.out_channels,
+            bias=True
+        )
+        for m in self.children():
+            init_weights(m, init_type='kaiming')
+
+    def forward(self, inputs):
+        batch_size = inputs.size[0]
+        outputs = self.conv(inputs)
+        outputs = outputs.view(batch_size, -1)
+        outputs = self.fc(outputs)
+        return outputs
+
+class UNetGridGatingSignal(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(UNetGridGatingSignal, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2d(self.out_channels),
+            nn.ReLU(inplace=True)
+        )
+        for m in self.children():
+            init_weights(m, init_type='kaiming')
+
+    def forward(self, inputs):
+        outputs = self.conv(inputs)
+        return outputs
+
 
 if __name__ == '__main__':
     from torch.autograd import Variable
