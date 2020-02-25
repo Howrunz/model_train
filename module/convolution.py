@@ -1,4 +1,7 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from module.attention import init_weights
 
 class conv_block(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -32,6 +35,36 @@ class up_sample(nn.Module):
         result = self.up_sample(x)
         return result
 
+class UNetUp_CT(nn.Module):
+    '''code from https://github.com/ozan-oktay/Attention-Gated-Networks/'''
+    def __init__(self, in_channels, out_channels):
+        super(UNetUp_CT, self).__init__()
+        self.conv = conv_block(in_channels+out_channels, out_channels)
+        self.up = nn.Upsample(scale_factor=2, mode='trilinear')
+
+        for m in self.children():
+            if m.__class__.__name__.find('conv_block') != -1: continue
+            init_weights(m, init_type='kaiming')
+
+    def forward(self, input1, input2):
+        output2 = self.up(input2)
+        offset = output2.size()[2] - input1.size()[2]
+        padding = 2 * [offset // 2, offset // 2, 0]
+        output1 = F.pad(input1, padding)
+        return self.conv(torch.cat([output1, output2], 1))
+
+class UNetDsv(nn.Module):
+    '''code from https://github.com/ozan-oktay/Attention-Gated-Networks/'''
+    def __init__(self, in_channels, out_channels, scale_factor):
+        super(UNetDsv, self).__init__()
+        self.dsv = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0),
+            nn.Upsample(scale_factor=scale_factor, mode='trilinear')
+        )
+
+    def forward(self, inputs):
+        output = self.dsv(inputs)
+        return output
 
 class Recurrent_block(nn.Module):
     """
