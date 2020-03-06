@@ -17,9 +17,3 @@ def save_weight(model, model_path, train_loss, valid_loss, epoch, step):
             'valid_loss': valid_loss
         }, str(model_path)
     )
-
-def read_yaml(yaml_path):
-    with open(yaml_path, 'r') as f:
-        result = f.read()
-        config = yaml.load(result, Loader=yaml.FullLoader)
-    return config
