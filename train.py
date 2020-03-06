@@ -13,7 +13,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from model.UNet import UNet
 from loss.Dice_loss import Diceloss
 from dataset.data_loader import get_loader
-from utils import tools
+from utils import tools, config
 
 def main():
     parser = argparse.ArgumentParser()
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
 
     # get config
-    cfg = tools.read_yaml(args.config_file)
+    cfg = config.Config(args.config_file)
 
     # init writer
     writer = SummaryWriter(log_dir='log_result')
@@ -61,9 +61,9 @@ def main():
     best_validation_loss = 0.
 
     # define dataloader
-    csv_dir = cfg['DIRECTORY']['csv_dir']
-    image_dir = cfg['DIRECTORY']['image_dir']
-    mask_dir = cfg['DIRECTORY']['mask_dir']
+    csv_dir = cfg.csv_dir
+    image_dir = cfg.image_dir
+    mask_dir = cfg.mask_dir
     train_loader = get_loader(cfg, image_dir, mask_dir, csv_dir)
     valid_loader = get_loader(cfg, image_dir, mask_dir, csv_dir, status='validation')
 
@@ -79,7 +79,7 @@ def main():
         print('-★-' * 10)
 
     # optimizer
-    if cfg['Model']['Optimizer'] == 'Adam':
+    if cfg.Optimizer == 'Adam':
         optimizer = Adam(network.parameters(), lr=args.lr)
     else:
         optimizer = SGD(network.parameters(), lr=args.lr)
@@ -90,7 +90,7 @@ def main():
     # start training
     print('start training')
     step = 0
-    for epoch in range(1, cfg['Model']['Epochs']):
+    for epoch in range(1, cfg.Epochs):
         start_time = time.time()
         train_loss = 0.
         network.train()
