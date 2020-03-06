@@ -1,15 +1,18 @@
-MODEL:
-  Batch_size: 8
-  Learning_rate: 0.0001
-  Optimizer: Adam # choice in Adam or SGD
-  Epochs: 100
-  Num_workers: 4
-  Threshold: 0.3
-DATASET:
-  Height: 256
-  Width: 256
-  Channel: 3
-DIRECTORY:
-  csv_dir: "./data/"
-  image_dir: "./data/image/"
-  mask_dir: "./data/mask"
+# MODEL:
+Batch_size: 8
+Learning_rate: 0.0001
+Optimizer: Adam # choice in Adam or SGD
+Epochs: 100
+Num_workers: 4
+Threshold: 0.3
+
+# DATASET:
+Height: 256
+Width: 256
+Channel: 3
+
+
+# DIRECTORY:
+csv_dir: "./data/"
+image_dir: "./data/image/"
+mask_dir: "./data/mask"
