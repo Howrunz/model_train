@@ -1,5 +1,5 @@
 import argparse
-from utils import tools
+from utils import config
 from dataset.data_loader import get_test_loader
 import cv2
 import os
@@ -16,8 +16,8 @@ def main():
     arg('--config-file', type=str, default='./config/train_config.yaml')
     args = parser.parse_args()
 
-    cfg = tools.read_yaml(args.config_file)
-    csv_dir = cfg['DIRECTORY']['csv_dir']
+    cfg = config.Config(args.config_file)
+    csv_dir = cfg.csv_dir
 
     network = args.model
     model_weight_path = 'checkpoint/model_' + args.model + '.pt'
@@ -35,7 +35,7 @@ def main():
             test_image = test_image.to(device)
             outputs = network(test_image)
             test_pred = outputs.squeeze().data.cpu().numpy()
-            test_mask = (test_pred > cfg['MODEL']['Threshold']).astype('int') * 255
+            test_mask = (test_pred > cfg.Threshold).astype('int') * 255
             cv2.imwrite(os.path.join(args.output_path, '%s.png' % test_name), test_mask)
 
 if __name__ == '__main__':
