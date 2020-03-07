@@ -1,3 +1,4 @@
+import os
 import argparse
 from pathlib import Path
 import cv2 as cv
@@ -48,7 +49,12 @@ def main():
         network = UNet(in_channels=3, out_channels=1)
 
     # multiple GPUs
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(g) for g in cfg.GPU)
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        torch.backends.cudnn.benchmark = True
+    else:
+        device = torch.device('cpu')
     network = nn.DataParallel(network)
     network.to(device)
 
