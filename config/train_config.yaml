@@ -1,3 +1,6 @@
+# BASE:
+GPU: [0]
+
 # MODEL:
 Batch_size: 8
 Learning_rate: 0.0001
