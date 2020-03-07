@@ -11,9 +11,9 @@ class TrainDataset(Dataset):
         self.masks_dir = mask_dir
         self.status = status
         assert self.status in ['train', 'validation'], 'Please input status as train or validation'
-        height = cfg['DATASET']['Height']
-        width = cfg['DATASET']['Width']
-        channel = cfg['DATASET']['Channel']
+        height = cfg.Height
+        width = cfg.Width
+        channel = cfg.Channel
 
         self.csv_file = csv_dir + self.status + '_list.csv'
         data = pd.read_csv(self.csv_file, dtype=str)
@@ -44,9 +44,9 @@ class TestDataset(Dataset):
     def __init__(self, cfg, image_dir, csv_file):
         self.image_dir = image_dir
         self.csv = csv_file
-        height = cfg['DATASET']['Height']
-        width = cfg['DATASET']['Width']
-        channel = cfg['DATASET']['Channel']
+        height = cfg.Height
+        width = cfg.Width
+        channel = cfg.Channel
         self.data = pd.read_csv(self.csv, dtype=str)
         self.data_num = self.data['Type'][self.data.Type == 'test'].value_counts().values[0]
         image_set = np.empty((self.data_num, height, width, channel))
@@ -68,9 +68,9 @@ def get_loader(cfg, img_dir, mask_dir, csv_dir, shuffle=True, status='train'):
     dataset = TrainDataset(cfg, img_dir, mask_dir, csv_dir, status=status)
     data_loader = DataLoader(
         dataset=dataset,
-        batch_size=cfg['MODEL']['Batch_size'],
+        batch_size=cfg.Batch_size,
         shuffle=shuffle,
-        num_workers=cfg['MODEL']['Num_workers']
+        num_workers=cfg.Num_workers
     )
     return data_loader
 
@@ -78,8 +78,8 @@ def get_test_loader(cfg, img_dir, csv_file, shuffle=False):
     dataset = TestDataset(cfg, img_dir, csv_file)
     data_loader = DataLoader(
         dataset=dataset,
-        batch_size=cfg['MODEL']['Batch_size'],
+        batch_size=cfg.Batch_size,
         shuffle=shuffle,
-        num_workers=cfg['MODEL']['Num_workers']
+        num_workers=cfg.Num_workers
     )
     return data_loader
