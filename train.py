@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.optim import Adam, SGD
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from model.UNet import UNet
+from model import UNet, Attention_UNet, R2_UNet
 from loss.Dice_loss import Diceloss
 from dataset.data_loader import get_loader
 from utils import tools, config
@@ -19,8 +19,8 @@ from utils import tools, config
 def main():
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
-    arg('--model', type=str, default='UNet', choices=['UNet'])
-    arg('--config-file', type=str, default='./config/train_config.yaml')
+    arg('--model', type=str, default='UNet', choices=['UNet', 'Attn_UNet', 'R2_UNet'])
+    arg('--conf', type=str, default='./config/train_config.yaml')
     arg('--checkpoint', type=str, default='checkpoint/')
     args = parser.parse_args()
 
@@ -44,9 +44,14 @@ def main():
 
     # load model
     if args.model == 'Unet':
-        network = UNet(in_channels=3, out_channels=1)
+        network = UNet.UNet(in_channels=3, out_channels=1)
+    elif args.model == 'Attn_UNet':
+        network = Attention_UNet.Attn_UNet(in_channels=3, out_channels=1)
+    elif args.model == 'R2_UNet':
+        network = R2_UNet.R2U_Net(in_channels=3, out_channels=1)
     else:
-        network = UNet(in_channels=3, out_channels=1)
+        print('use default network UNet')
+        network = UNet.UNet(in_channels=3, out_channels=1)
 
     # multiple GPUs
     os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(str(g) for g in cfg.GPU)
