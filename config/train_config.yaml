@@ -1,5 +1,6 @@
 # BASE:
 GPU: [0]
+Random_seed: 42
 
 # MODEL:
 Batch_size: 8
