@@ -11,7 +11,6 @@ def main():
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
     arg('--model', type=str, default='UNet', choices=['UNet'])
-    arg('--image-path', type=str, default='./data/test/')
     arg('--output-path', type=str, default='./output/')
     arg('--config-file', type=str, default='./config/train_config.yaml')
     args = parser.parse_args()
